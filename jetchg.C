@@ -22,10 +22,9 @@
 #include <TCut.h>
 #include <vector>
 #include "TCanvas.h"
-//#include "jet_totchg.h"
-#include "jetcharge_pp_bkg.h"
-//#include "jetcharge_PbPbMC_bkg.h"
-#include "nCScorr.h"
+#include "skims/pp_chg_tree.h"
+#include "skims/PbPb_chg_tree.h"
+#include "jffcorr/nCScorr.h"
 
 const int nCBins = 1;
 const int nptBins = 55;
@@ -34,9 +33,6 @@ const int nkbins = 4;
 const int netaBins = 15;
 
 using namespace std;
-
-const bool ispp = true;
-const bool isdata = false;
 
 int mypbin, mycbin, myptbin, myrefptbin, myetabin;
 
@@ -53,9 +49,9 @@ Double_t jt_bin_bounds[56] = {50., 60., 70., 80., 90., 100., 110., 120., 130., 1
 Double_t eta_bounds[16] = {-1.5,-1.3,-1.1,-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9,1.1,1.3,1.5};
 /*
 ///pp MC Pythia8 pthat weights
-double pthatbins[9] = {50,80,100,120,170,220,280,370,9999};
-double xsecs[9] = {3.778E-03, 4.412E-04, 1.511E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 1.088E-07, 0};
-double pthatEntries[8] ={175696, 145099, 160445, 258400, 189793, 196579, 54724, 12064};
+double pthatbins_Pythia8[9] = {50,80,100,120,170,220,280,370,9999};
+double xsecs_Pythia8[9] = {3.778E-03, 4.412E-04, 1.511E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 1.088E-07, 0};
+double pthatEntries_Pythia8[8] ={175696, 145099, 160445, 258400, 189793, 196579, 54724, 12064};
 */
 
 ///pp MC Pythia6 pthat weights
@@ -65,18 +61,10 @@ double pthatEntries[8] ={766451, 292063, 91200, 468748, 447938, 259208, 234447, 
 
 /*
 ///PbPb MC pthat weights
-double pthatbins[9] = {15,30,50,80,120,170,220,280,9999};
-double xsecs[9] = {5.335E-01, 3.378E-02, 3.778E-03, 4.412E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 0};
-double pthatEntries[8] ={0, 0, 0, 2571566, 2.85082e+06, 2.68057e+06, 2.89138e+06, 950344};
-*
-/*
-TString pt[41] = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40"};
-
-int jt_nbins = 41;
-Double_t jt_bin_bounds[41] = {100., 110., 120., 130., 140., 150., 160., 170., 180., 190., 200., 210., 220., 230., 240., 250., 260., 270., 280.,290.,300.,310.,320.,330.,340.,350.,360.,370.,380.,390.,400.,410.,420.,430.,440.,450.,460.,470.,480.,490.,500.};
-Double_t pt_bounds[15] = {50., 60., 70., 80., 90., 100., 110., 120., 130., 140., 170., 220., 280., 370., 500.};
+double pthatbins_P+H[9] = {15,30,50,80,120,170,220,280,9999};
+double xsecs_P+H[9] = {5.335E-01, 3.378E-02, 3.778E-03, 4.412E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 0};
+double pthatEntries_P+H[8] ={0, 0, 0, 2571566, 2.85082e+06, 2.68057e+06, 2.89138e+06, 950344};
 */
-
 float CBins[5] = {0, 20, 60, 100, 200};
 
 double vz, calo_jtpt, calo_corrpt, calo_refpt, calo_jteta, calo_jtphi, hiBin, pthat, pthat_weight, weight_vz, weight_cen, gen_chg, trk_chg, gen_chg_pt2, trk_chg_pt2, gen_chg_pt4, trk_chg_pt4, gen_chg_pt5, trk_chg_pt5;
@@ -89,7 +77,7 @@ double fcent_cymbal(double centrality, TF1* fcent1){
   return (centrality < 194) ? fcent1->Eval(centrality) : 1;
 }
 
-void jetchg(){
+void jetchg(bool ispp=1, bool isdata=1){
 
   nCScorr *corrpt = new nCScorr(ispp,false);
 
@@ -414,20 +402,22 @@ void jetchg(){
   TF1 *fvz_cymbal = new TF1("fvz","pol6",-15,15); 
   fvz_cymbal->SetParameters(1.18472,-0.132675,0.00857998,-0.000326085,-1.48786e-06,4.68665e-07,-7.32942e-09 );
     
+  ///skims
   TFile *my_file;  
   if(isdata){
-   if(ispp) my_file = TFile::Open("/data/jetchg_skims/ppdata_bkg_jetcharge_Apr10.root");
-   else my_file = TFile::Open("/data/jetchg_skims/PbPbdata_jetcharge_bkg_ptcut_noetacut_Apr8.root");
+   if(ispp) my_file = TFile::Open("skims/ppdata_bkg_jetcharge_Apr10.root");
+   else my_file = TFile::Open("skims/PbPbdata_jetcharge_bkg_ptcut_eta0p5_1p6_Apr5.root");
   }
   else{
-    if(ispp) my_file = TFile::Open("/data/jetchg_skims/Pythia6_bkg_jetcharge_Apr10.root"); 
-    else my_file = TFile::Open("/data/jetchg_skims/P+H_jetcharge_bkg_ptcut_noetacut_Apr5.root");
+    if(ispp) my_file = TFile::Open("skims/Pythia6_bkg_jetcharge_Apr10.root"); 
+    else my_file = TFile::Open("skims/P+H_jetcharge_bkg_ptcut_eta0p5_1p6_Apr5.root");
   } 
 
   cout<<"got file"<<endl;
 
   TTree *inp_tree = (TTree*)my_file->Get("unzipMixTree");
-  jetcharge_pp_bkg *my_primary = new jetcharge_pp_bkg(inp_tree);
+  pp_chg_tree *my_primary = new pp_chg_tree(inp_tree);
+  //PbPb_chg_tree *my_primary = new PbPb_chg_tree(inp_tree);
   cout << "Successfully retrieved tree from input file!" << endl;
   Long64_t n_jets = my_primary->fChain->GetEntriesFast();
 
@@ -441,35 +431,36 @@ void jetchg(){
     my_primary->fChain->GetEntry(jet);
 
     calo_jteta = my_primary->jteta;  
-    if(fabs(calo_jteta) >= etamaxcut /*|| fabs(calo_jteta) <= etamincut*/) continue ;  
+    if(fabs(calo_jteta) >= etamaxcut || fabs(calo_jteta) <= etamincut) continue ;  
 
     calo_jtpt = my_primary->jtpt;
     //calo_corrpt = my_primary->corrpt;
 
     calo_jtphi = my_primary->jtphi;
 
-    calo_refpt = my_primary->refpt;
-    if (calo_refpt <= refpTmincut /*|| calo_refpt >= refpTmaxcut*/) continue;
+    if(!isdata){
+        calo_refpt = my_primary->refpt;
+        if (calo_refpt <= refpTmincut) continue;
 
-    refparton_flavor = my_primary->refparton_flavor;
+        refparton_flavor = my_primary->refparton_flavor;
 
-    n_gen = my_primary->n_gen;
+        n_gen = my_primary->n_gen;
 
-    //gen_chg = my_primary->gen_totchg;
-    gen_chg = my_primary->gen_totchg_k0p5;
-    gen_chg_pt2 = my_primary->gen_totchg_pt2;
-    gen_chg_pt4 = my_primary->gen_totchg_pt4;
-    gen_chg_pt5 = my_primary->gen_totchg_pt5;
+        gen_chg = my_primary->gen_totchg_k0p5;
+        gen_chg_pt2 = my_primary->gen_totchg_pt2;
+        gen_chg_pt4 = my_primary->gen_totchg_pt4;
+        gen_chg_pt5 = my_primary->gen_totchg_pt5;
 
-    gen_bkg = my_primary->gen_bkgchg_k0p5;
-    gen_bkg_pt2 = my_primary->gen_bkgchg_pt2;
-    gen_bkg_pt4 = my_primary->gen_bkgchg_pt4;
-    gen_bkg_pt5 = my_primary->gen_bkgchg_pt5;
+        gen_bkg = my_primary->gen_bkgchg_k0p5;
+        gen_bkg_pt2 = my_primary->gen_bkgchg_pt2;
+        gen_bkg_pt4 = my_primary->gen_bkgchg_pt4;
+        gen_bkg_pt5 = my_primary->gen_bkgchg_pt5;
 
-    gen_chg = gen_chg - gen_bkg;
-    gen_chg_pt2 = gen_chg_pt2 - gen_bkg_pt2;
-    gen_chg_pt4 = gen_chg_pt4 - gen_bkg_pt4;
-    gen_chg_pt5 = gen_chg_pt5 - gen_bkg_pt5;
+        gen_chg = gen_chg - gen_bkg;
+        gen_chg_pt2 = gen_chg_pt2 - gen_bkg_pt2;
+        gen_chg_pt4 = gen_chg_pt4 - gen_bkg_pt4;
+        gen_chg_pt5 = gen_chg_pt5 - gen_bkg_pt5;
+    }
 
     n_trk = my_primary->n_trk;
 
@@ -491,49 +482,41 @@ void jetchg(){
     trk_chg_pt4 = trk_chg_pt4 - trk_bkg_pt4;
     trk_chg_pt5 = trk_chg_pt5 - trk_bkg_pt5;
 
-    nPF_2 = my_primary->nPFcand2_id1;
-    //nCS_2 = my_primary->nCScand2_id145;
-
     //// centrality bin and weight 
     if(ispp) hiBin = 1;
     //else hiBin = my_primary->hiBin;
 
-    //double weight_cen = f_cen->Eval(hiBin);
     double weight_cen = fcent_cymbal(hiBin,f_cent);
-
     if(ispp || isdata) weight_cen = 1.;
 
+    nPF_2 = my_primary->nPFcand2_id1;
     if(nPF_2 > 20 && calo_jtpt <= 120.) calo_corrpt = corrpt->getCorrection(ispp, 20, hiBin, calo_jtpt, calo_jteta);
     else calo_corrpt = corrpt->getCorrection(ispp, nPF_2, hiBin, calo_jtpt, calo_jteta);
 
+    //nCS_2 = my_primary->nCScand2_id145;
     //if(nCS_2 > 20 && calo_jtpt <= 120.) calo_corrpt = corrpt->getCorrection(ispp, 20, hiBin, calo_jtpt, calo_jteta);
     //else calo_corrpt = corrpt->getCorrection(ispp, nCS_2, hiBin, calo_jtpt, calo_jteta);
-    
-    //calo_corrpt = corrpt->getCorrection(ispp,nPF2_id1, hiBin, calo_jtpt, calo_jteta);
-    
+        
     if (calo_corrpt <= pTmincut || calo_corrpt >= pTmaxcut) continue;
 
     //// vz and weight
     vz = my_primary->vz;
     if (fabs(vz) > 15.) continue;
 
-    //pythia6 
-    weight_vz = 1./fvz_pp->Eval(vz);
     //pythia8 
     //weight_vz = fvz_pythia8->Eval(vz);
+    //pythia6 
+    if(ispp) weight_vz = 1./fvz_pp->Eval(vz);
     //cymbal
-    //weight_vz = fvz_cymbal->Eval(vz);
+    else weight_vz = fvz_cymbal->Eval(vz);
 
     if(isdata) weight_vz = 1.;  
   
     for (int cbin = 0; cbin < nCBins; cbin++){ 
-
       if (hiBin > CBins[cbin] && hiBin <= CBins[cbin+1]){
-
         mycbin = cbin; 
       }
     }
-
     if(ispp) mycbin = 0;
     
     ///// pthat weight
@@ -543,10 +526,7 @@ void jetchg(){
     int ibin=0;
     while(pthat>pthatbins[ibin+1]) ibin++;
     pthat_weight = (xsecs[ibin]-xsecs[ibin+1])/pthatEntries[ibin];
-
-/*
-    pthat_weight = my_primary->weight;
-*/
+    //pthat_weight = my_primary->weight;
     if(isdata) pthat_weight = 1.;
 
     if(!isdata){
@@ -723,12 +703,12 @@ void jetchg(){
   TFile *closure_histos;
 
   if(isdata){
-    if(ispp) closure_histos = new TFile("/home/dhanush/Documents/jet_chg/ppdata_jetchg_bkgsub_eta0p5_1p5_Apr16.root", "RECREATE");
-    else closure_histos = new TFile("/home/dhanush/Documents/jet_chg/PbPbdata_jetchg_bkgsub_eta0p5_1p5_Apr16.root", "RECREATE");
+    if(ispp) closure_histos = new TFile("ppdata_jetchg_bkgsub_eta0p5_1p5_Apr26.root", "RECREATE");
+    else closure_histos = new TFile("PbPbdata_jetchg_bkgsub_eta0p5_1p5_Apr26.root", "RECREATE");
   }
   else{
-    if(ispp) closure_histos = new TFile("/home/dhanush/Documents/jet_chg/Pythia6_jetchg_bkgsub_eta1p5_Apr16.root", "RECREATE");
-    else closure_histos = new TFile("/home/dhanush/Documents/jet_chg/P+H_jetchg_cymbal_bkgsub_eta1p5_Apr16.root", "RECREATE");
+    if(ispp) closure_histos = new TFile("Pythia6_jetchg_bkgsub_eta0p5_1p5_Apr24.root", "RECREATE");
+    else closure_histos = new TFile("P+H_jetchg_cymbal_bkgsub_eta0p5_1p5_Apr24.root", "RECREATE");
   }  
 
   closure_histos->cd();
