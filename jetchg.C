@@ -26,7 +26,7 @@
 #include "skims/PbPb_chg_tree.h"
 #include "jffcorr/nCScorr.h"
 
-const int nCBins = 1;
+const int nCBins = 4;
 const int nptBins = 55;
 const int ntrkBins = 4;
 const int nkbins = 4;
@@ -38,7 +38,7 @@ int mypbin, mycbin, myptbin, myrefptbin, myetabin;
 
 char saythis[500];
 
-TString cent[4] = {"0","1","2","3"};
+TString cent[5] = {"0","1","2","3","4"};
 TString trk[4] = {"0p7","2","4","5"};
 
 TString pt[56] = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55"};
@@ -59,13 +59,12 @@ double pthatbins[9] = {50,80,100,120,170,220,280,370,9999};
 double xsecs[9] = {3.778E-03, 4.412E-04, 1.511E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 1.088E-07, 0};
 double pthatEntries[8] ={766451, 292063, 91200, 468748, 447938, 259208, 234447, 50972};
 
-/*
 ///PbPb MC pthat weights
-double pthatbins_P+H[9] = {15,30,50,80,120,170,220,280,9999};
-double xsecs_P+H[9] = {5.335E-01, 3.378E-02, 3.778E-03, 4.412E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 0};
-double pthatEntries_P+H[8] ={0, 0, 0, 2571566, 2.85082e+06, 2.68057e+06, 2.89138e+06, 950344};
-*/
-float CBins[5] = {0, 20, 60, 100, 200};
+double pthatbins_PH[9] = {15,30,50,80,120,170,220,280,9999};
+double xsecs_PH[9] = {5.335E-01, 3.378E-02, 3.778E-03, 4.412E-04, 6.147E-05, 1.018E-05, 2.477E-06, 6.160E-07, 0};
+double pthatEntries_PH[8] ={0, 0, 0, 2571566, 2.85082e+06, 2.68057e+06, 2.89138e+06, 950344};
+
+float CBins[6] = {0, 20, 60, 100, 140, 200};
 
 double vz, calo_jtpt, calo_corrpt, calo_refpt, calo_jteta, calo_jtphi, hiBin, pthat, pthat_weight, weight_vz, weight_cen, gen_chg, trk_chg, gen_chg_pt2, trk_chg_pt2, gen_chg_pt4, trk_chg_pt4, gen_chg_pt5, trk_chg_pt5;
 double gen_chg_k0p3, gen_chg_k0p5, gen_chg_k0p7, gen_chg_k1, trk_chg_k0p3, trk_chg_k0p5, trk_chg_k0p7, trk_chg_k1;
@@ -79,7 +78,7 @@ double fcent_cymbal(double centrality, TF1* fcent1){
 
 void jetchg(bool ispp=1, bool isdata=1){
 
-  nCScorr *corrpt = new nCScorr(ispp,false);
+  nCScorr *corrpt = new nCScorr(ispp,true);
 
 //// defining histos and profiles
 
@@ -103,11 +102,19 @@ void jetchg(bool ispp=1, bool isdata=1){
   TH1D *h_reco_corr_upbar[nCBins];
   TH1D *h_reco_corr_d[nCBins];
   TH1D *h_reco_corr_dbar[nCBins];
+  TH1D *h_reco_corr_c[nCBins];
+  TH1D *h_reco_corr_s[nCBins];
+  TH1D *h_reco_corr_b[nCBins];
 
   TH1D *h_gen_full[nCBins];
   TH1D *h_gen_full_q[nCBins];
   TH1D *h_gen_full_g[nCBins];  
   TH1D *h_gen_full_u[nCBins];
+
+  TH1D *h_gen_full_up[nCBins];
+  TH1D *h_gen_full_upbar[nCBins];
+  TH1D *h_gen_full_d[nCBins];
+  TH1D *h_gen_full_dbar[nCBins];
 
   TH2F *h_chg_refpt[nCBins][ntrkBins];
   TH2F *h_chg_refpt_q[nCBins][ntrkBins];  
@@ -127,10 +134,18 @@ void jetchg(bool ispp=1, bool isdata=1){
   TH2F *h_chg_corrpt_bkg_q[nCBins][ntrkBins];
   TH2F *h_chg_corrpt_bkg_g[nCBins][ntrkBins];
 
+  TH2F *h_chg_refpt_up[nCBins][ntrkBins];  
+  TH2F *h_chg_refpt_upbar[nCBins][ntrkBins];
+  TH2F *h_chg_refpt_d[nCBins][ntrkBins];
+  TH2F *h_chg_refpt_dbar[nCBins][ntrkBins];
+
   TH2F *h_chg_corrpt_up[nCBins][ntrkBins];  
   TH2F *h_chg_corrpt_upbar[nCBins][ntrkBins];
   TH2F *h_chg_corrpt_d[nCBins][ntrkBins];
   TH2F *h_chg_corrpt_dbar[nCBins][ntrkBins];
+  TH2F *h_chg_corrpt_c[nCBins][ntrkBins];
+  TH2F *h_chg_corrpt_s[nCBins][ntrkBins]; 
+  TH2F *h_chg_corrpt_b[nCBins][ntrkBins];
 
   TH2F *h_trk_refpt[nCBins];
   TH2F *h_trk_refpt_q[nCBins];  
@@ -203,6 +218,22 @@ void jetchg(bool ispp=1, bool isdata=1){
     h_gen_full_u[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
     h_gen_full_u[ibin]->Sumw2();
 
+    sprintf(saythis,"h_gen_full_up_cent%d",ibin);
+    h_gen_full_up[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_gen_full_up[ibin]->Sumw2();
+
+    sprintf(saythis,"h_gen_full_upbar_cent%d",ibin);
+    h_gen_full_upbar[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_gen_full_upbar[ibin]->Sumw2();
+
+    sprintf(saythis,"h_gen_full_d_cent%d",ibin);
+    h_gen_full_d[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_gen_full_d[ibin]->Sumw2();
+
+    sprintf(saythis,"h_gen_full_dbar_cent%d",ibin);
+    h_gen_full_dbar[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_gen_full_dbar[ibin]->Sumw2();
+
     sprintf(saythis,"h_pthat_cent%d",ibin);
     h_pthat[ibin] = new TH1D(saythis, "",50,0.,500.);
     h_pthat[ibin]->Sumw2();
@@ -258,6 +289,18 @@ void jetchg(bool ispp=1, bool isdata=1){
     sprintf(saythis,"h_reco_corr_dbar_cent%d",ibin);
     h_reco_corr_dbar[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
     h_reco_corr_dbar[ibin]->Sumw2();
+
+    sprintf(saythis,"h_reco_corr_c_cent%d",ibin);
+    h_reco_corr_c[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_reco_corr_c[ibin]->Sumw2();
+
+    sprintf(saythis,"h_reco_corr_s_cent%d",ibin);
+    h_reco_corr_s[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_reco_corr_s[ibin]->Sumw2();
+
+    sprintf(saythis,"h_reco_corr_b_cent%d",ibin);
+    h_reco_corr_b[ibin] = new TH1D(saythis,"",jt_nbins-1,jt_bin_bounds);
+    h_reco_corr_b[ibin]->Sumw2();
 
       sprintf(saythis,"h_trk_refpt_cent%d",ibin);
       h_trk_refpt[ibin] = new TH2F(saythis,"",600,0.,600.,40,0.,40.);
@@ -368,6 +411,34 @@ void jetchg(bool ispp=1, bool isdata=1){
       sprintf(saythis,"h_chg_corrpt_dbar_cent%d_trk%d",ibin,ibin2);
       h_chg_corrpt_dbar[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
       h_chg_corrpt_dbar[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_corrpt_c_cent%d_trk%d",ibin,ibin2);
+      h_chg_corrpt_c[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_corrpt_c[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_corrpt_s_cent%d_trk%d",ibin,ibin2);
+      h_chg_corrpt_s[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_corrpt_s[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_corrpt_b_cent%d_trk%d",ibin,ibin2);
+      h_chg_corrpt_b[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_corrpt_b[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_refpt_up_cent%d_trk%d",ibin,ibin2);
+      h_chg_refpt_up[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_refpt_up[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_refpt_upbar_cent%d_trk%d",ibin,ibin2);
+      h_chg_refpt_upbar[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_refpt_upbar[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_refpt_d_cent%d_trk%d",ibin,ibin2);
+      h_chg_refpt_d[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_refpt_d[ibin][ibin2]->Sumw2();
+
+      sprintf(saythis,"h_chg_refpt_dbar_cent%d_trk%d",ibin,ibin2);
+      h_chg_refpt_dbar[ibin][ibin2] = new TH2F(saythis,"",600,0.,600.,250,-2.5,2.5);
+      h_chg_refpt_dbar[ibin][ibin2]->Sumw2();
     }
   }
 
@@ -416,8 +487,8 @@ void jetchg(bool ispp=1, bool isdata=1){
   cout<<"got file"<<endl;
 
   TTree *inp_tree = (TTree*)my_file->Get("unzipMixTree");
-  pp_chg_tree *my_primary = new pp_chg_tree(inp_tree);
-  //PbPb_chg_tree *my_primary = new PbPb_chg_tree(inp_tree);
+  //pp_chg_tree *my_primary = new pp_chg_tree(inp_tree);
+  PbPb_chg_tree *my_primary = new PbPb_chg_tree(inp_tree);
   cout << "Successfully retrieved tree from input file!" << endl;
   Long64_t n_jets = my_primary->fChain->GetEntriesFast();
 
@@ -484,19 +555,20 @@ void jetchg(bool ispp=1, bool isdata=1){
 
     //// centrality bin and weight 
     if(ispp) hiBin = 1;
-    //else hiBin = my_primary->hiBin;
+    else hiBin = my_primary->hiBin;
 
     double weight_cen = fcent_cymbal(hiBin,f_cent);
     if(ispp || isdata) weight_cen = 1.;
-
+/*
     nPF_2 = my_primary->nPFcand2_id1;
     if(nPF_2 > 20 && calo_jtpt <= 120.) calo_corrpt = corrpt->getCorrection(ispp, 20, hiBin, calo_jtpt, calo_jteta);
     else calo_corrpt = corrpt->getCorrection(ispp, nPF_2, hiBin, calo_jtpt, calo_jteta);
+*/
 
-    //nCS_2 = my_primary->nCScand2_id145;
-    //if(nCS_2 > 20 && calo_jtpt <= 120.) calo_corrpt = corrpt->getCorrection(ispp, 20, hiBin, calo_jtpt, calo_jteta);
-    //else calo_corrpt = corrpt->getCorrection(ispp, nCS_2, hiBin, calo_jtpt, calo_jteta);
-        
+    nCS_2 = my_primary->nCScand2_id145;
+    if(nCS_2 > 20 && calo_jtpt <= 120.) calo_corrpt = corrpt->getCorrection(ispp, 20, hiBin, calo_jtpt, calo_jteta);
+    else calo_corrpt = corrpt->getCorrection(ispp, nCS_2, hiBin, calo_jtpt, calo_jteta);
+      
     if (calo_corrpt <= pTmincut || calo_corrpt >= pTmaxcut) continue;
 
     //// vz and weight
@@ -522,10 +594,11 @@ void jetchg(bool ispp=1, bool isdata=1){
     ///// pthat weight
 
     pthat = my_primary->pthat;
+    if(pthat < 80.) continue;
 
     int ibin=0;
-    while(pthat>pthatbins[ibin+1]) ibin++;
-    pthat_weight = (xsecs[ibin]-xsecs[ibin+1])/pthatEntries[ibin];
+    while(pthat>pthatbins_PH[ibin+1]) ibin++;
+    pthat_weight = (xsecs_PH[ibin]-xsecs_PH[ibin+1])/pthatEntries_PH[ibin];
     //pthat_weight = my_primary->weight;
     if(isdata) pthat_weight = 1.;
 
@@ -542,6 +615,7 @@ void jetchg(bool ispp=1, bool isdata=1){
     /////filling histos
 
     if(!isdata){      
+      //if(refparton_flavor == -999){
       if(refparton_flavor == -999){
         h_trk_refpt_u[mycbin]->Fill(calo_refpt,n_gen,pthat_weight*weight_cen*weight_vz);
         h_chg_refpt_u[mycbin][0]->Fill(calo_refpt,gen_chg,pthat_weight*weight_cen*weight_vz);
@@ -640,6 +714,39 @@ void jetchg(bool ispp=1, bool isdata=1){
           h_chg_refpt_bkg_q[mycbin][2]->Fill(calo_refpt,gen_bkg_pt4,pthat_weight*weight_cen*weight_vz);
           h_chg_refpt_bkg_q[mycbin][3]->Fill(calo_refpt,gen_bkg_pt5,pthat_weight*weight_cen*weight_vz);
 
+          if(refparton_flavor==1){
+            h_chg_refpt_d[mycbin][0]->Fill(calo_refpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_d[mycbin][1]->Fill(calo_refpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_d[mycbin][2]->Fill(calo_refpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz); 
+            h_chg_refpt_d[mycbin][3]->Fill(calo_refpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);                    
+
+            h_gen_full_d[mycbin]->Fill(calo_refpt,pthat_weight*weight_cen*weight_vz);
+          }
+          else if(refparton_flavor==-1){
+            h_chg_refpt_dbar[mycbin][0]->Fill(calo_refpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_dbar[mycbin][1]->Fill(calo_refpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_dbar[mycbin][2]->Fill(calo_refpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_dbar[mycbin][3]->Fill(calo_refpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);
+
+            h_gen_full_dbar[mycbin]->Fill(calo_refpt,pthat_weight*weight_cen*weight_vz);
+          }
+          else if(refparton_flavor==2){
+            h_chg_refpt_up[mycbin][0]->Fill(calo_refpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_up[mycbin][1]->Fill(calo_refpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_up[mycbin][2]->Fill(calo_refpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_up[mycbin][3]->Fill(calo_refpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);
+
+            h_gen_full_up[mycbin]->Fill(calo_refpt,pthat_weight*weight_cen*weight_vz);
+          }
+          else if(refparton_flavor==-2){
+            h_chg_refpt_upbar[mycbin][0]->Fill(calo_refpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_upbar[mycbin][1]->Fill(calo_refpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_refpt_upbar[mycbin][2]->Fill(calo_refpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz); 
+            h_chg_refpt_upbar[mycbin][3]->Fill(calo_refpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);
+
+            h_gen_full_upbar[mycbin]->Fill(calo_refpt,pthat_weight*weight_cen*weight_vz);
+          }
+
           h_gen_full_q[mycbin]->Fill(calo_refpt,pthat_weight*weight_cen*weight_vz);
 
         }
@@ -692,6 +799,31 @@ void jetchg(bool ispp=1, bool isdata=1){
             h_reco_corr_upbar[mycbin]->Fill(calo_corrpt,pthat_weight*weight_cen*weight_vz);
             h_eta_full_upbar[mycbin]->Fill(calo_jteta,pthat_weight*weight_cen*weight_vz);
           }
+          else if(fabs(refparton_flavor)==3){
+            h_chg_corrpt_s[mycbin][0]->Fill(calo_corrpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_s[mycbin][1]->Fill(calo_corrpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_s[mycbin][2]->Fill(calo_corrpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz); 
+            h_chg_corrpt_s[mycbin][3]->Fill(calo_corrpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);                    
+
+            h_reco_corr_s[mycbin]->Fill(calo_corrpt,pthat_weight*weight_cen*weight_vz);
+          }          
+          else if(fabs(refparton_flavor)==4){
+            h_chg_corrpt_c[mycbin][0]->Fill(calo_corrpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_c[mycbin][1]->Fill(calo_corrpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_c[mycbin][2]->Fill(calo_corrpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz); 
+            h_chg_corrpt_c[mycbin][3]->Fill(calo_corrpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);                    
+
+            h_reco_corr_c[mycbin]->Fill(calo_corrpt,pthat_weight*weight_cen*weight_vz);
+          }
+          else if(fabs(refparton_flavor)==5){
+            h_chg_corrpt_b[mycbin][0]->Fill(calo_corrpt,trk_chg,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_b[mycbin][1]->Fill(calo_corrpt,trk_chg_pt2,pthat_weight*weight_cen*weight_vz);
+            h_chg_corrpt_b[mycbin][2]->Fill(calo_corrpt,trk_chg_pt4,pthat_weight*weight_cen*weight_vz); 
+            h_chg_corrpt_b[mycbin][3]->Fill(calo_corrpt,trk_chg_pt5,pthat_weight*weight_cen*weight_vz);                    
+
+            h_reco_corr_b[mycbin]->Fill(calo_corrpt,pthat_weight*weight_cen*weight_vz);
+          }
+
           h_reco_corr_q[mycbin]->Fill(calo_corrpt,pthat_weight*weight_cen*weight_vz);
           h_eta_full_q[mycbin]->Fill(calo_jteta,pthat_weight*weight_cen*weight_vz);
         }
@@ -703,12 +835,12 @@ void jetchg(bool ispp=1, bool isdata=1){
   TFile *closure_histos;
 
   if(isdata){
-    if(ispp) closure_histos = new TFile("ppdata_jetchg_bkgsub_eta0p5_1p5_Apr26.root", "RECREATE");
-    else closure_histos = new TFile("PbPbdata_jetchg_bkgsub_eta0p5_1p5_Apr26.root", "RECREATE");
+    if(ispp) closure_histos = new TFile("ppdata_jetchg_bkgsub_eta0p5_1p5_May23.root", "RECREATE");
+    else closure_histos = new TFile("PbPbdata_jetchg_bkgsub_eta0p5_1p5_May23.root", "RECREATE");
   }
   else{
-    if(ispp) closure_histos = new TFile("Pythia6_jetchg_bkgsub_eta0p5_1p5_Apr24.root", "RECREATE");
-    else closure_histos = new TFile("P+H_jetchg_cymbal_bkgsub_eta0p5_1p5_Apr24.root", "RECREATE");
+    if(ispp) closure_histos = new TFile("Pythia6_jetchg_bkgsub_eta0p5_1p5_May23.root", "RECREATE");
+    else closure_histos = new TFile("P+H_jetchg_cymbal_bkgsub_eta0p5_1p5_May23.root", "RECREATE");
   }  
 
   closure_histos->cd();
@@ -720,6 +852,11 @@ void jetchg(bool ispp=1, bool isdata=1){
     h_gen_full_u[ibin]->Write();
     h_gen_full_q[ibin]->Write();
     h_gen_full_g[ibin]->Write();
+
+    h_gen_full_up[ibin]->Write();
+    h_gen_full_upbar[ibin]->Write();
+    h_gen_full_d[ibin]->Write();
+    h_gen_full_dbar[ibin]->Write();
 
     h_eta_full_u[ibin]->Write();
     h_eta_full_q[ibin]->Write();
@@ -738,6 +875,10 @@ void jetchg(bool ispp=1, bool isdata=1){
     h_reco_corr_upbar[ibin]->Write();
     h_reco_corr_d[ibin]->Write();
     h_reco_corr_dbar[ibin]->Write();
+
+    h_reco_corr_c[ibin]->Write();
+    h_reco_corr_s[ibin]->Write();
+    h_reco_corr_b[ibin]->Write();
 
     h_trk_refpt[ibin]->Write();
     h_trk_refpt_q[ibin]->Write();
@@ -765,10 +906,19 @@ void jetchg(bool ispp=1, bool isdata=1){
       h_chg_corrpt_bkg_q[ibin][ibin2]->Write();
       h_chg_corrpt_bkg_g[ibin][ibin2]->Write();
 
+      h_chg_refpt_up[ibin][ibin2]->Write();
+      h_chg_refpt_upbar[ibin][ibin2]->Write();
+      h_chg_refpt_d[ibin][ibin2]->Write();
+      h_chg_refpt_dbar[ibin][ibin2]->Write();
+
       h_chg_corrpt_up[ibin][ibin2]->Write();
       h_chg_corrpt_upbar[ibin][ibin2]->Write();
       h_chg_corrpt_d[ibin][ibin2]->Write();
       h_chg_corrpt_dbar[ibin][ibin2]->Write();
+
+      h_chg_corrpt_c[ibin][ibin2]->Write();
+      h_chg_corrpt_s[ibin][ibin2]->Write();
+      h_chg_corrpt_b[ibin][ibin2]->Write();
     } 
   }
     h_pthat[ibin]->Write();
