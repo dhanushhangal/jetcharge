@@ -28,6 +28,9 @@
 #define nptBins 3
 #define ntrkbins 4
 #define nkbins 4
+#define njtptbins 10
+
+Double_t k_scale=1.;
 
 const Double_t pt_low = 120.;
 const Double_t pt_high = 600.;
@@ -49,10 +52,12 @@ TString pt[56] = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","1
 TString cent_tag[] = {"0-10%","10-30%","30-50%","50-100%"};
 TString trk_tag[] = {"p_{T}^{trk} > 0.7 GeV","p_{T}^{trk} > 2 GeV","p_{T}^{trk} > 4 GeV", "p_{T}^{trk} > 5 GeV"};
 
+Double_t jtpt_bound[njtptbins+1] = {120.,130.,140.,150.,160.,170.,180.,190.,200.,210.,220.};
 Double_t x_mean[ntrkbins-1] = {2.,4.,5.};
 Double_t x_mean_err[ntrkbins-1] = {0.1,0.1,0.1};
 Double_t gluon[nCBins],quark[nCBins],up[nCBins],upbar[nCBins],down[nCBins],downbar[nCBins],gluon_ubar_dbar[nCBins], charm[nCBins], strange[nCBins], bottom[nCBins];
 Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], gluon_ubar_dbar_gen[nCBins];
+Double_t ubdbcsb[nCBins][nptBins];
 
   TFile *closure_histos_pp_MC = TFile::Open("Pythia6_jetchg_bkgsub_eta0p5_1p5_May23.root");
   TFile *closure_histos_PbPb_MC = TFile::Open("P+H_jetchg_cymbal_bkgsub_eta0p5_1p5_May23.root");
@@ -60,6 +65,9 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TFile *closure_histos_PbPb_data = TFile::Open("PbPbdata_jetchg_bkgsub_eta0p5_1p5_Apr30.root");
 
   TH1D *h_dummy = new TH1D("h_dummy","",5,1,6);
+  TH1D *h_dummy2 = new TH1D("h_dummy2","",5,1,6);
+  TH1D *h_dummy3 = new TH1D("h_dummy3","",10,120.,220.);
+  TH1D *h_dummy4 = new TH1D("h_dummy4","",10,120.,220.);
 
   TH2F *h_chg_refpt[nCBins][ntrkbins];
   TH2F *h_chg_refpt_q[nCBins][ntrkbins];
@@ -193,7 +201,7 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TProfile *h_chg_ref_avg[nCBins][ntrkbins];
   TProfile *h_chg_ref_q_avg[nCBins][ntrkbins];
   TProfile *h_chg_ref_g_avg[nCBins][ntrkbins];
-
+/*
   TProfile *h_chg_reco_avg[nCBins][ntrkbins];
   TProfile *h_chg_reco_q_avg[nCBins][ntrkbins];
   TProfile *h_chg_reco_g_avg[nCBins][ntrkbins];
@@ -202,7 +210,7 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TProfile *h_chg_reco_down_avg[nCBins][ntrkbins];
   TProfile *h_chg_reco_upb_avg[nCBins][ntrkbins];
   TProfile *h_chg_reco_downb_avg[nCBins][ntrkbins];
-
+*/
   TProfile *h_chg_reco_bkg_avg[nCBins][ntrkbins];
 
   TProfile *h_chg_data_avg[nCBins][ntrkbins];
@@ -211,6 +219,7 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TGraphErrors *up_reco[nCBins];
   TGraphErrors *down_reco[nCBins];
   TGraphErrors *gluon_reco[nCBins];
+  TGraphErrors *quark_reco[nCBins];
 
   TGraphErrors *up_ref[nCBins];
   TGraphErrors *down_ref[nCBins];
@@ -219,6 +228,7 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TGraphErrors *up_data[nCBins];
   TGraphErrors *down_data[nCBins];
   TGraphErrors *gluon_data[nCBins];
+  TGraphErrors *quark_data[nCBins];
 
   TF1 *f_chg_ref[nCBins][ntrkbins];  
   TF1 *f_chg_reco[nCBins][ntrkbins];
@@ -226,6 +236,18 @@ Double_t gluon_gen[nCBins],quark_gen[nCBins], down_gen[nCBins], up_gen[nCBins], 
   TF1 *f_chg_udg_ref[nCBins][ntrkbins];
 
   TF1 *f_eta_reco[nCBins];
+
+  TH1D *h_chg_reco_avg[nCBins][njtptbins][ntrkbins];
+  TH1D *h_chg_reco_q_avg[nCBins][njtptbins][ntrkbins];
+  TH1D *h_chg_reco_g_avg[nCBins][njtptbins][ntrkbins];
+  TH1D *h_chg_reco_up_avg[nCBins][njtptbins][ntrkbins];
+  TH1D *h_chg_reco_down_avg[nCBins][njtptbins][ntrkbins];
+
+  TF1 *f_chg_reco_avg[nCBins][njtptbins][ntrkbins];  
+  TF1 *f_chg_reco_q_avg[nCBins][njtptbins][ntrkbins];
+  TF1 *f_chg_reco_g_avg[nCBins][njtptbins][ntrkbins];
+  TF1 *f_chg_reco_up_avg[nCBins][njtptbins][ntrkbins];
+  TF1 *f_chg_reco_down_avg[nCBins][njtptbins][ntrkbins];
 
 void get_histos(){
 
@@ -406,6 +428,18 @@ void get_histos(){
           h_chg_reco_downb[ibin][ibin2]->Scale(dbar_scale);
         }
 */
+        //h_chg_reco_upb[ibin][ibin2]->Scale(k_scale);
+        //h_chg_reco_downb[ibin][ibin2]->Scale(k_scale);
+        //h_chg_reco_c[ibin][ibin2]->Scale(k_scale);
+        //h_chg_reco_s[ibin][ibin2]->Scale(k_scale);
+        //h_chg_reco_b[ibin][ibin2]->Scale(k_scale);
+
+        int low_bin = h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(pt_low); int high_bin = h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(pt_high);
+
+        ubdbcsb[ibin][ibin2] = h_chg_reco_upb[ibin][ibin2]->Integral()+h_chg_reco_downb[ibin][ibin2]->Integral()+h_chg_reco_c[ibin][ibin2]->Integral()+h_chg_reco_s[ibin][ibin2]->Integral()+h_chg_reco_b[ibin][ibin2]->Integral();
+        ubdbcsb[ibin][ibin2] = ubdbcsb[ibin][ibin2]/h_chg_reco[ibin][ibin2]->Integral();
+        //cout<<ubdbcsb[ibin][ibin2]<<endl;         
+
         h_chg_reco_gubdb[ibin][ibin2] = (TH1D*)h_chg_reco_g[ibin][ibin2]->Clone(Form("h_chg_reco_gubdb_%d_%d",ibin,ibin2));
         h_chg_reco_gubdb[ibin][ibin2]->Add(h_chg_reco_upb[ibin][ibin2]);
         h_chg_reco_gubdb[ibin][ibin2]->Add(h_chg_reco_downb[ibin][ibin2]);
@@ -424,6 +458,21 @@ void get_histos(){
         h_chg_reco_downb[ibin][ibin2]->Scale(1./(h_chg_reco_downb[ibin][ibin2]->Integral()));
         h_chg_reco_gubdb[ibin][ibin2]->Scale(1./(h_chg_reco_gubdb[ibin][ibin2]->Integral()));
         h_chg_data[ibin][ibin2]->Scale(1./(h_chg_data[ibin][ibin2]->Integral()));
+
+        for(int ibin3=0; ibin3<njtptbins; ibin3++){
+          h_chg_reco_avg[ibin][ibin3][ibin2] = h_chg_corrpt[ibin][ibin2]-> ProjectionY(Form("h_chg_reco_avg_%d_%d_%d",ibin,ibin2,ibin3),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3]),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3+1]),"");
+          h_chg_reco_q_avg[ibin][ibin3][ibin2] = h_chg_corrpt_q[ibin][ibin2]-> ProjectionY(Form("h_chg_reco_q_avg_%d_%d_%d",ibin,ibin2,ibin3),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3]),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3+1]),"");
+          h_chg_reco_g_avg[ibin][ibin3][ibin2] = h_chg_corrpt_g[ibin][ibin2]-> ProjectionY(Form("h_chg_reco_g_avg_%d_%d_%d",ibin,ibin2,ibin3),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3]),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3+1]),"");
+          h_chg_reco_up_avg[ibin][ibin3][ibin2] = h_chg_corrpt_up[ibin][ibin2]-> ProjectionY(Form("h_chg_reco_up_avg_%d_%d_%d",ibin,ibin2,ibin3),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3]),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3+1]),"");
+          h_chg_reco_down_avg[ibin][ibin3][ibin2] = h_chg_corrpt_down[ibin][ibin2]-> ProjectionY(Form("h_chg_reco_down_avg_%d_%d_%d",ibin,ibin2,ibin3),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3]),h_chg_corrpt[ibin][ibin2]->GetXaxis()->FindBin(jtpt_bound[ibin3+1]),"");
+        
+          f_chg_reco_avg[ibin][ibin3][ibin2] = new TF1(Form("f_chg_%d_%d_%d",ibin,ibin2,ibin3),"gaus",-2.,2.);
+          f_chg_reco_q_avg[ibin][ibin3][ibin2] = new TF1(Form("f_chg_q_%d_%d_%d",ibin,ibin2,ibin3),"gaus",-2.,2.);
+          f_chg_reco_g_avg[ibin][ibin3][ibin2] = new TF1(Form("f_chg_g_%d_%d_%d",ibin,ibin2,ibin3),"gaus",-2.,2.);
+          f_chg_reco_up_avg[ibin][ibin3][ibin2] = new TF1(Form("f_chg_up_%d_%d_%d",ibin,ibin2,ibin3),"gaus",-2.,2.);
+          f_chg_reco_down_avg[ibin][ibin3][ibin2] = new TF1(Form("f_chg_down_%d_%d_%d",ibin,ibin2,ibin3),"gaus",-2.,2.);
+        }
+
 
         h_chg_ref[ibin][ibin2] = h_chg_refpt[ibin][ibin2]-> ProjectionY(Form("h_chg_ref_%d_%d",ibin,ibin2),h_chg_refpt[ibin][ibin2]->GetXaxis()->FindBin(pt_low),h_chg_refpt[ibin][ibin2]->GetXaxis()->FindBin(pt_high),"");
         h_chg_ref_g[ibin][ibin2] = h_chg_refpt_g[ibin][ibin2]-> ProjectionY(Form("h_chg_ref_g_%d_%d",ibin,ibin2),h_chg_refpt_g[ibin][ibin2]->GetXaxis()->FindBin(pt_low),h_chg_refpt_g[ibin][ibin2]->GetXaxis()->FindBin(pt_high),"");
@@ -520,7 +569,7 @@ void get_histos(){
         h_chg_ref_avg[ibin][ibin2] = h_chg_refpt[ibin][ibin2]-> ProfileX(Form("h_chg_ref_avg_%d_%d",ibin,ibin2),h_chg_refpt[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_refpt[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_ref_q_avg[ibin][ibin2] = h_chg_refpt_q[ibin][ibin2]-> ProfileX(Form("h_chg_ref_avg_q_%d_%d",ibin,ibin2),h_chg_refpt_q[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_refpt_q[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_ref_g_avg[ibin][ibin2] = h_chg_refpt_g[ibin][ibin2]-> ProfileX(Form("h_chg_ref_avg_g_%d_%d",ibin,ibin2),h_chg_refpt_g[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_refpt_g[ibin][ibin2]->GetYaxis()->FindBin(10),"");
-
+/*
         h_chg_reco_avg[ibin][ibin2] = h_chg_corrpt[ibin][ibin2]-> ProfileX(Form("h_chg_reco_avg_%d_%d",ibin,ibin2),h_chg_corrpt[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_reco_q_avg[ibin][ibin2] = h_chg_corrpt_q[ibin][ibin2]-> ProfileX(Form("h_chg_reco_q_avg_%d_%d",ibin,ibin2),h_chg_corrpt_q[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_q[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_reco_g_avg[ibin][ibin2] = h_chg_corrpt_g[ibin][ibin2]-> ProfileX(Form("h_chg_reco_g_avg_%d_%d",ibin,ibin2),h_chg_corrpt_g[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_g[ibin][ibin2]->GetYaxis()->FindBin(10),"");
@@ -529,7 +578,7 @@ void get_histos(){
         h_chg_reco_down_avg[ibin][ibin2] = h_chg_corrpt_down[ibin][ibin2]-> ProfileX(Form("h_chg_reco_down_avg_%d_%d",ibin,ibin2),h_chg_corrpt_down[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_down[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_reco_upb_avg[ibin][ibin2] = h_chg_corrpt_upb[ibin][ibin2]-> ProfileX(Form("h_chg_reco_upb_avg_%d_%d",ibin,ibin2),h_chg_corrpt_upb[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_upb[ibin][ibin2]->GetYaxis()->FindBin(10),"");
         h_chg_reco_downb_avg[ibin][ibin2] = h_chg_corrpt_downb[ibin][ibin2]-> ProfileX(Form("h_chg_reco_downb_avg_%d_%d",ibin,ibin2),h_chg_corrpt_downb[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_downb[ibin][ibin2]->GetYaxis()->FindBin(10),"");
-
+*/
         h_chg_data_avg[ibin][ibin2] = h_chg_corrpt_data[ibin][ibin2]-> ProfileX(Form("h_chg_data_avg_%d_%d",ibin,ibin2),h_chg_corrpt_data[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_data[ibin][ibin2]->GetYaxis()->FindBin(10),"");
 
         h_chg_reco_bkg_avg[ibin][ibin2] = h_chg_corrpt_bkg[ibin][ibin2]-> ProfileX(Form("h_chg_bkg_reco_avg_%d_%d",ibin,ibin2),h_chg_corrpt_bkg[ibin][ibin2]->GetYaxis()->FindBin(-10),h_chg_corrpt_bkg[ibin][ibin2]->GetYaxis()->FindBin(10),"");
@@ -547,28 +596,31 @@ void plot_charge(){
 
   get_histos();
 
-  TLine *tl_g[nCBins]; TLine *tl_u[nCBins]; TLine *tl_d[nCBins];
+  TLine *tl_q[nCBins]; TLine *tl_g[nCBins]; TLine *tl_u[nCBins]; TLine *tl_d[nCBins];
   TLine *tl_g_data; TLine *tl_u_data; TLine *tl_d_data;
+  TLine *tl_ubar[nCBins]; TLine *tl_dbar[nCBins]; TLine *tl_c[nCBins]; TLine *tl_s[nCBins]; TLine *tl_b[nCBins];
   TLine *tl_g_ref[nCBins]; TLine *tl_q_ref[nCBins]; TLine *tl_u_ref[nCBins]; TLine *tl_d_ref[nCBins];
 
   ////////// direct MC fraction from spectra
   for(int ibin=0;ibin<nCBins;ibin++){
-      gluon_gen[ibin] = h_ref_MC_g[ibin]->Integral()/h_ref_MC[ibin]->Integral();
-      quark_gen[ibin] = h_ref_MC_q[ibin]->Integral()/h_ref_MC[ibin]->Integral();
-      up_gen[ibin] = h_ref_MC_up[ibin]->Integral()/h_ref_MC[ibin]->Integral();
-      down_gen[ibin] = h_ref_MC_d[ibin]->Integral()/h_ref_MC[ibin]->Integral();
-      gluon_ubar_dbar_gen[ibin] = (h_ref_MC_g[ibin]->Integral()+h_ref_MC_upbar[ibin]->Integral()+h_ref_MC_dbar[ibin]->Integral())/h_ref_MC[ibin]->Integral();
+      int low_bin = h_reco_MC[ibin]->FindBin(pt_low); int high_bin = h_reco_MC[ibin]->FindBin(pt_high); 
 
-      gluon[ibin] = h_reco_MC_g[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      quark[ibin] = h_reco_MC_q[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      up[ibin] = h_reco_MC_up[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      down[ibin] = h_reco_MC_d[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      upbar[ibin] = h_reco_MC_upbar[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      downbar[ibin] = h_reco_MC_dbar[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      charm[ibin] = h_reco_MC_c[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      strange[ibin] = h_reco_MC_s[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      bottom[ibin] = h_reco_MC_b[ibin]->Integral()/h_reco_MC[ibin]->Integral();
-      gluon_ubar_dbar[ibin] = (h_reco_MC_g[ibin]->Integral()+h_reco_MC_upbar[ibin]->Integral()+h_reco_MC_dbar[ibin]->Integral()+h_reco_MC_c[ibin]->Integral()+h_reco_MC_s[ibin]->Integral()+h_reco_MC_b[ibin]->Integral())/h_reco_MC[ibin]->Integral();
+      gluon_gen[ibin] = h_ref_MC_g[ibin]->Integral(low_bin,high_bin)/h_ref_MC[ibin]->Integral(low_bin,high_bin);
+      quark_gen[ibin] = h_ref_MC_q[ibin]->Integral(low_bin,high_bin)/h_ref_MC[ibin]->Integral(low_bin,high_bin);
+      up_gen[ibin] = h_ref_MC_up[ibin]->Integral(low_bin,high_bin)/h_ref_MC[ibin]->Integral(low_bin,high_bin);
+      down_gen[ibin] = h_ref_MC_d[ibin]->Integral(low_bin,high_bin)/h_ref_MC[ibin]->Integral(low_bin,high_bin);
+      gluon_ubar_dbar_gen[ibin] = (h_ref_MC_g[ibin]->Integral(low_bin,high_bin)+h_ref_MC_upbar[ibin]->Integral(low_bin,high_bin)+h_ref_MC_dbar[ibin]->Integral(low_bin,high_bin))/h_ref_MC[ibin]->Integral(low_bin,high_bin);
+
+      gluon[ibin] = h_reco_MC_g[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      quark[ibin] = h_reco_MC_q[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      up[ibin] = h_reco_MC_up[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      down[ibin] = h_reco_MC_d[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      upbar[ibin] = h_reco_MC_upbar[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      downbar[ibin] = h_reco_MC_dbar[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      charm[ibin] = h_reco_MC_c[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      strange[ibin] = h_reco_MC_s[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      bottom[ibin] = h_reco_MC_b[ibin]->Integral(low_bin,high_bin)/h_reco_MC[ibin]->Integral(low_bin,high_bin);
+      gluon_ubar_dbar[ibin] = (h_reco_MC_g[ibin]->Integral(low_bin,high_bin)+h_reco_MC_upbar[ibin]->Integral(low_bin,high_bin)+h_reco_MC_dbar[ibin]->Integral(low_bin,high_bin)+h_reco_MC_c[ibin]->Integral(low_bin,high_bin)+h_reco_MC_s[ibin]->Integral(low_bin,high_bin)+h_reco_MC_b[ibin]->Integral(low_bin,high_bin))/h_reco_MC[ibin]->Integral(low_bin,high_bin);
 
       cout<<"up: "<<up[ibin]<<"  down:  "<<down[ibin]<<"  g_ub_db:  "<<gluon_ubar_dbar[ibin]<<endl;
       cout<<"charm: "<<charm[ibin]<<"  strange:  "<<strange[ibin]<<"  bottom:  "<<bottom[ibin]<<endl;
@@ -577,7 +629,14 @@ void plot_charge(){
   
       tl_u[ibin] = new TLine(1.,up[ibin],6.,up[ibin]); tl_u[ibin]->SetLineStyle(2); tl_u[ibin]->SetLineColor(kBlue);
       tl_d[ibin] = new TLine(1.,down[ibin],6.,down[ibin]); tl_d[ibin]->SetLineStyle(9); tl_d[ibin]->SetLineColor(kBlue);
-      tl_g[ibin] = new TLine(1.,gluon_ubar_dbar[ibin],6.,gluon_ubar_dbar[ibin]); tl_g[ibin]->SetLineStyle(2); tl_g[ibin]->SetLineColor(kRed);
+      tl_q[ibin] = new TLine(1.,quark[ibin],6.,quark[ibin]); tl_q[ibin]->SetLineStyle(1); tl_q[ibin]->SetLineColor(kBlue);
+      tl_g[ibin] = new TLine(1.,gluon[ibin],6.,gluon[ibin]); tl_g[ibin]->SetLineStyle(1); tl_g[ibin]->SetLineColor(kRed);
+
+      tl_ubar[ibin] = new TLine(1.,upbar[ibin],6.,upbar[ibin]); tl_ubar[ibin]->SetLineStyle(2); tl_ubar[ibin]->SetLineColor(kBlue);
+      tl_dbar[ibin] = new TLine(1.,downbar[ibin],6.,downbar[ibin]); tl_dbar[ibin]->SetLineStyle(2); tl_dbar[ibin]->SetLineColor(kBlue);
+      tl_c[ibin] = new TLine(1.,charm[ibin],6.,charm[ibin]); tl_c[ibin]->SetLineStyle(2); tl_c[ibin]->SetLineColor(kBlue);
+      tl_s[ibin] = new TLine(1.,strange[ibin],6.,strange[ibin]); tl_s[ibin]->SetLineStyle(2); tl_s[ibin]->SetLineColor(kBlue);
+      tl_b[ibin] = new TLine(1.,bottom[ibin],6.,bottom[ibin]); tl_b[ibin]->SetLineStyle(2); tl_b[ibin]->SetLineColor(kBlue);
 
       tl_q_ref[ibin] = new TLine(1.,quark_gen[ibin],6.,quark_gen[ibin]); tl_q_ref[ibin]->SetLineStyle(2); tl_q_ref[ibin]->SetLineColor(kBlue);
       tl_g_ref[ibin] = new TLine(1.,gluon_ubar_dbar_gen[ibin],6.,gluon_ubar_dbar_gen[ibin]); tl_g_ref[ibin]->SetLineStyle(2); tl_g_ref[ibin]->SetLineColor(kRed);
@@ -585,7 +644,7 @@ void plot_charge(){
       tl_d_ref[ibin] = new TLine(1.,down_gen[ibin],6.,down_gen[ibin]); tl_d_ref[ibin]->SetLineStyle(9); tl_d_ref[ibin]->SetLineColor(kBlue);
   }
 
-  tl_g_data = new TLine(1.,gluon_ubar_dbar[0],6.,gluon_ubar_dbar[0]); tl_g_data->SetLineStyle(2); tl_g_data->SetLineColor(kRed);
+  //tl_g_data = new TLine(1.,gluon[0],6.,gluon[0]); tl_g_data->SetLineStyle(2); tl_g_data->SetLineColor(kRed);
   tl_u_data = new TLine(1.,0.134,6.,0.134); tl_u_data->SetLineStyle(2); tl_u_data->SetLineColor(kBlue);
   tl_d_data = new TLine(1.,0.154,6.,0.154); tl_d_data->SetLineStyle(9); tl_d_data->SetLineColor(kBlue);
 
@@ -946,11 +1005,51 @@ void plot_charge(){
   h_dummy->GetXaxis()->SetTitleSize(0.05);
   h_dummy->GetXaxis()->SetLabelSize(0.07);
   h_dummy->GetXaxis()->SetRangeUser(1.,6.);
-  h_dummy->GetYaxis()->SetRangeUser(0.,0.8);
+  h_dummy->GetYaxis()->SetRangeUser(0.15,0.85);
+
+  h_dummy2->GetXaxis()->SetTitle("p_{T} cut");
+  h_dummy2->GetYaxis()->SetTitle("1/N_{jets}");
+  h_dummy2->GetYaxis()->SetNdivisions(505);
+  h_dummy2->GetYaxis()->SetTitleSize(0.05);
+  h_dummy2->GetYaxis()->SetTitleOffset(0.75);
+  h_dummy2->GetYaxis()->SetLabelSize(0.07);
+  h_dummy2->GetXaxis()->CenterTitle();
+  h_dummy2->GetXaxis()->SetNdivisions(505);
+  h_dummy2->GetXaxis()->SetTitleSize(0.05);
+  h_dummy2->GetXaxis()->SetLabelSize(0.07);
+  h_dummy2->GetXaxis()->SetRangeUser(1.,6.);
+  h_dummy2->GetYaxis()->SetRangeUser(0.,0.4);
+
+  h_dummy3->GetXaxis()->SetTitle("jet p_{T}");
+  h_dummy3->GetYaxis()->SetTitle("mean");
+  h_dummy3->GetYaxis()->SetNdivisions(505);
+  h_dummy3->GetYaxis()->SetTitleSize(0.05);
+  h_dummy3->GetYaxis()->SetTitleOffset(0.75);
+  h_dummy3->GetYaxis()->SetLabelSize(0.07);
+  h_dummy3->GetXaxis()->CenterTitle();
+  h_dummy3->GetXaxis()->SetNdivisions(505);
+  h_dummy3->GetXaxis()->SetTitleSize(0.05);
+  h_dummy3->GetXaxis()->SetLabelSize(0.07);
+  h_dummy3->GetXaxis()->SetRangeUser(120.,200.);
+  h_dummy3->GetYaxis()->SetRangeUser(-0.3,0.4);
+
+  h_dummy4->GetXaxis()->SetTitle("jet p_{T}");
+  h_dummy4->GetYaxis()->SetTitle("sigma");
+  h_dummy4->GetYaxis()->SetNdivisions(505);
+  h_dummy4->GetYaxis()->SetTitleSize(0.05);
+  h_dummy4->GetYaxis()->SetTitleOffset(0.75);
+  h_dummy4->GetYaxis()->SetLabelSize(0.07);
+  h_dummy4->GetXaxis()->CenterTitle();
+  h_dummy4->GetXaxis()->SetNdivisions(505);
+  h_dummy4->GetXaxis()->SetTitleSize(0.05);
+  h_dummy4->GetXaxis()->SetLabelSize(0.07);
+  h_dummy4->GetXaxis()->SetRangeUser(120.,200.);
+  h_dummy4->GetYaxis()->SetRangeUser(0.35,0.65);
 
   Double_t up_fit[ntrkbins-1]; Double_t up_fiterr[ntrkbins-1];
   Double_t down_fit[ntrkbins-1]; Double_t down_fiterr[ntrkbins-1];
   Double_t gluon_fit[ntrkbins-1]; Double_t gluon_fiterr[ntrkbins-1];
+  Double_t quark_fit[ntrkbins-1]; Double_t quark_fiterr[ntrkbins-1];
 
   for(int ibin=0; ibin<nCBins; ibin++){
     for(int ibin2=0;ibin2<ntrkbins-1;ibin2++){
@@ -1073,7 +1172,9 @@ void plot_charge(){
     for(int ibin2=0;ibin2<ntrkbins-1;ibin2++){
       up_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(0); up_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(0);
       down_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(1); down_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
-      gluon_fit[ibin2] = 1.-(f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)); gluon_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+      gluon_fit[ibin2] = 1.-(f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)+ubdbcsb[ibin][ibin2+1]); gluon_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+      quark_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)+ubdbcsb[ibin][ibin2+1]; quark_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+
     }
     up_reco[ibin] = new TGraphErrors(ntrkbins-1,x_mean,up_fit,x_mean_err,up_fiterr);
     up_reco[ibin]->SetName((TString)("up_reco_cent"+cent[ibin]));
@@ -1081,6 +1182,8 @@ void plot_charge(){
     down_reco[ibin]->SetName((TString)("down_reco_cent"+cent[ibin]));
     gluon_reco[ibin] = new TGraphErrors(ntrkbins-1,x_mean,gluon_fit,x_mean_err,gluon_fiterr);
     gluon_reco[ibin]->SetName((TString)("gluon_reco_cent"+cent[ibin]));
+    quark_reco[ibin] = new TGraphErrors(ntrkbins-1,x_mean,quark_fit,x_mean_err,quark_fiterr);
+    quark_reco[ibin]->SetName((TString)("quark_reco_cent"+cent[ibin]));
   }
 
 
@@ -1097,8 +1200,10 @@ void plot_charge(){
     down_reco[ibin]->Draw("PL");
     gluon_reco[ibin]->SetMarkerColor(kRed); gluon_reco[ibin]->SetMarkerStyle(20); gluon_reco[ibin]->SetMarkerSize(1.2);
     gluon_reco[ibin]->Draw("PL");
+    quark_reco[ibin]->SetMarkerColor(kBlue); quark_reco[ibin]->SetMarkerStyle(20); quark_reco[ibin]->SetMarkerSize(1.2);
+    quark_reco[ibin]->Draw("PL");
   
-    tl_u[ibin]->Draw("same"); tl_d[ibin]->Draw("same"); tl_g[ibin]->Draw("same");
+    tl_u[ibin]->Draw("same"); tl_d[ibin]->Draw("same"); tl_g[ibin]->Draw("same"); tl_q[ibin]->Draw("same");
 
     if(ibin>0){
         TString tmp1 = cent_tag[ibin-1];
@@ -1190,7 +1295,12 @@ void plot_charge(){
     for(int ibin2=0;ibin2<ntrkbins-1;ibin2++){
       up_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(0); up_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(0);
       down_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(1); down_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
-      gluon_fit[ibin2] = 1.-(f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)); gluon_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+      gluon_fit[ibin2] = 1.-(f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)+ubdbcsb[ibin][ibin2+1]); gluon_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+      quark_fit[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParameter(0)+f_chg_udg_data[ibin][ibin2+1]->GetParameter(1)+ubdbcsb[ibin][ibin2+1]; quark_fiterr[ibin2] = f_chg_udg_data[ibin][ibin2+1]->GetParError(1);
+
+      cout<<"quark["<<ibin<<"]["<<ibin2<<"] = "<<quark_fit[ibin2]<<";"<<endl;
+      cout<<"gluon["<<ibin<<"]["<<ibin2<<"] = "<<gluon_fit[ibin2]<<";"<<endl;
+      //cout<<"cent: "<<ibin<<".  trk: "<<ibin2<<".   gluon: "<<gluon_fit[ibin2]<<".  quark:"<<quark_fit[ibin2]<<endl;
     }
     up_data[ibin] = new TGraphErrors(ntrkbins-1,x_mean,up_fit,x_mean_err,up_fiterr);
     up_data[ibin]->SetName((TString)("up_data_cent"+cent[ibin]));
@@ -1198,6 +1308,8 @@ void plot_charge(){
     down_data[ibin]->SetName((TString)("down_data_cent"+cent[ibin]));
     gluon_data[ibin] = new TGraphErrors(ntrkbins-1,x_mean,gluon_fit,x_mean_err,gluon_fiterr);
     gluon_data[ibin]->SetName((TString)("gluon_data_cent"+cent[ibin]));
+    quark_data[ibin] = new TGraphErrors(ntrkbins-1,x_mean,quark_fit,x_mean_err,quark_fiterr);
+    quark_data[ibin]->SetName((TString)("quark_data_cent"+cent[ibin]));
   }
 
   TCanvas *c_data_graph = new TCanvas("c_data_graph","c_data_graph",1500,350);
@@ -1215,15 +1327,200 @@ void plot_charge(){
     down_data[ibin]->Draw("PL");
     gluon_data[ibin]->SetMarkerColor(kRed); gluon_data[ibin]->SetMarkerStyle(20); gluon_data[ibin]->SetMarkerSize(1.2);
     gluon_data[ibin]->Draw("PL");
+    quark_data[ibin]->SetMarkerColor(kBlue); quark_data[ibin]->SetMarkerStyle(20); quark_data[ibin]->SetMarkerSize(1.2);
+    quark_data[ibin]->Draw("PL");
 
-    if(ibin==0) {tl_u[ibin]->Draw("same"); tl_d[ibin]->Draw("same"); tl_g[ibin]->Draw("same");}
-    else {tl_u_data->Draw("same"); tl_d_data->Draw("same"); tl_g_data->Draw("same");}
+    if(ibin==0) {tl_u[ibin]->Draw("same"); tl_d[ibin]->Draw("same"); tl_g[ibin]->Draw("same"); tl_q[ibin]->Draw("same");}
+    else {tl_u_data->Draw("same"); tl_d_data->Draw("same"); tl_g[ibin]->Draw("same"); tl_q[ibin]->Draw("same");}
     
     if(ibin>0){
         TString tmp1 = cent_tag[ibin-1];
         tx1 = new TLatex(); tx1->SetTextSize(.1);
-        tx1->DrawLatexNDC(0.55,0.85, tmp1);
+        tx1->DrawLatexNDC(0.15,0.85, tmp1);
     }
+  }
+
+  TCanvas *c_data_qg_graph = new TCanvas("c_data_qg_graph","c_data_qg_graph",1500,350);
+  c_data_qg_graph->Divide(5,1,0);
+  
+  for(int ibin=0; ibin<nCBins; ibin++){
+    if(ibin==0) c_data_qg_graph->cd(1);
+    else c_data_qg_graph->cd(6-ibin);
+    h_dummy->Draw("same");
+    gluon_data[ibin]->SetMarkerColor(kRed); gluon_data[ibin]->SetMarkerStyle(20); gluon_data[ibin]->SetMarkerSize(1.2);
+    gluon_data[ibin]->Draw("PL");
+    quark_data[ibin]->SetMarkerColor(kBlue); quark_data[ibin]->SetMarkerStyle(20); quark_data[ibin]->SetMarkerSize(1.2);
+    quark_data[ibin]->Draw("PL");
+
+    tl_g[ibin]->Draw("same"); tl_q[ibin]->Draw("same");
+    
+    if(ibin>0){
+        TString tmp1 = cent_tag[ibin-1];
+        tx1 = new TLatex(); tx1->SetTextSize(.1);
+        tx1->DrawLatexNDC(0.15,0.85, tmp1);
+    }
+  }
+
+  TCanvas *c_data_q_graph = new TCanvas("c_data_q_graph","c_data_q_graph",1500,350);
+  c_data_q_graph->Divide(5,1,0);
+  
+  for(int ibin=0; ibin<nCBins; ibin++){
+    if(ibin==0) c_data_q_graph->cd(1);
+    else c_data_q_graph->cd(6-ibin);
+    h_dummy2->Draw("same");
+    up_data[ibin]->SetMarkerColor(kBlue); up_data[ibin]->SetMarkerStyle(22); up_data[ibin]->SetMarkerSize(1.3);
+    up_data[ibin]->Draw("PL");
+    down_data[ibin]->SetMarkerColor(kBlue); down_data[ibin]->SetMarkerStyle(23); down_data[ibin]->SetMarkerSize(1.3);
+    down_data[ibin]->Draw("PL");
+
+    if(ibin==0) {tl_u[ibin]->Draw("same"); tl_d[ibin]->Draw("same"); tl_ubar[ibin]->Draw("same"); tl_dbar[ibin]->Draw("same"); tl_c[ibin]->Draw("same"); tl_s[ibin]->Draw("same");tl_b[ibin]->Draw("same");}
+    else {tl_u_data->Draw("same"); tl_d_data->Draw("same");}
+    
+    if(ibin>0){
+        TString tmp1 = cent_tag[ibin-1];
+        tx1 = new TLatex(); tx1->SetTextSize(.1);
+        tx1->DrawLatexNDC(0.15,0.85, tmp1);
+    }
+  }
+
+
+
+
+
+
+  TCanvas *c_chg_avg_MC[ntrkbins];
+
+  for(int ibin2=1;ibin2<ntrkbins;ibin2++){
+    c_chg_avg_MC[ibin2] = new TCanvas((TString)("c_chg_avg_MC"+trk[ibin2]),(TString)("c_chg_avg_MC"+trk[ibin2]),1500,600);
+    c_chg_avg_MC[ibin2]->Divide(5,2,0);
+    //gStyle->SetOptStat(0);
+    //gStyle->SetOptFit(1);
+    for(int ibin=0;ibin<1;ibin++){
+     for(int ibin3=0;ibin3<njtptbins;ibin3++){  
+      c_chg_avg_MC[ibin2]->cd(ibin3+1);   
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->SetTitle("jet chg");
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetYaxis()->SetTitle("# of jets");
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetYaxis()->SetNdivisions(505);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetYaxis()->SetTitleSize(0.05);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetYaxis()->SetLabelSize(0.05);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->CenterTitle();
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->SetNdivisions(505);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->SetTitleSize(0.05);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->SetLabelSize(0.05);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->GetXaxis()->SetRangeUser(-1.5,1.5);
+      h_chg_reco_avg[ibin][ibin3][ibin2]->SetLineColor(kBlack); h_chg_reco_avg[ibin][ibin3][ibin2]->SetMarkerColor(kBlack); h_chg_reco_avg[ibin][ibin3][ibin2]->SetMarkerStyle(2);
+      h_chg_reco_q_avg[ibin][ibin3][ibin2]->SetLineColor(kBlue); h_chg_reco_q_avg[ibin][ibin3][ibin2]->SetMarkerColor(kBlue); h_chg_reco_q_avg[ibin][ibin3][ibin2]->SetMarkerStyle(2);    
+      h_chg_reco_g_avg[ibin][ibin3][ibin2]->SetLineColor(kRed); h_chg_reco_g_avg[ibin][ibin3][ibin2]->SetMarkerColor(kRed); h_chg_reco_g_avg[ibin][ibin3][ibin2]->SetMarkerStyle(2);
+      h_chg_reco_up_avg[ibin][ibin3][ibin2]->SetLineColor(kBlue); h_chg_reco_up_avg[ibin][ibin3][ibin2]->SetMarkerColor(kBlue); h_chg_reco_up_avg[ibin][ibin3][ibin2]->SetMarkerStyle(22);
+      h_chg_reco_down_avg[ibin][ibin3][ibin2]->SetLineColor(kBlue); h_chg_reco_down_avg[ibin][ibin3][ibin2]->SetMarkerColor(kBlue); h_chg_reco_down_avg[ibin][ibin3][ibin2]->SetMarkerStyle(23);
+
+      h_chg_reco_avg[ibin][ibin3][ibin2]->Draw("e0 same");
+      h_chg_reco_q_avg[ibin][ibin3][ibin2]->Draw("e0 same");
+      h_chg_reco_g_avg[ibin][ibin3][ibin2]->Draw("e0 same");
+      h_chg_reco_up_avg[ibin][ibin3][ibin2]->Draw("e0 same");
+      h_chg_reco_down_avg[ibin][ibin3][ibin2]->Draw("e0 same");
+      
+      h_chg_reco_avg[ibin][ibin3][ibin2]->Fit(f_chg_reco_avg[ibin][ibin3][ibin2],"Q M R","sames",-2.,2.);
+      h_chg_reco_q_avg[ibin][ibin3][ibin2]->Fit(f_chg_reco_q_avg[ibin][ibin3][ibin2],"Q M R","sames",-2.,2.);
+      h_chg_reco_g_avg[ibin][ibin3][ibin2]->Fit(f_chg_reco_g_avg[ibin][ibin3][ibin2],"Q M R","sames",-2.,2.);
+      h_chg_reco_up_avg[ibin][ibin3][ibin2]->Fit(f_chg_reco_up_avg[ibin][ibin3][ibin2],"Q M R","sames",-2.,2.);
+      h_chg_reco_down_avg[ibin][ibin3][ibin2]->Fit(f_chg_reco_down_avg[ibin][ibin3][ibin2],"Q M R","sames",-2.,2.);
+     }
+   }
+ }
+
+  Double_t inclusive_mean[njtptbins]; Double_t quark_mean[njtptbins]; Double_t gluon_mean[njtptbins]; Double_t up_mean[njtptbins]; Double_t down_mean[njtptbins];
+  Double_t inclusive_res[njtptbins]; Double_t quark_res[njtptbins]; Double_t gluon_res[njtptbins]; Double_t up_res[njtptbins]; Double_t down_res[njtptbins];
+
+  TGraph *inclusive_avg[nCBins][ntrkbins]; TGraph *quark_avg[nCBins][ntrkbins]; TGraph *gluon_avg[nCBins][ntrkbins]; TGraph *up_avg[nCBins][ntrkbins]; TGraph *down_avg[nCBins][ntrkbins];
+  TGraph *inclusive_sig[nCBins][ntrkbins]; TGraph *quark_sig[nCBins][ntrkbins]; TGraph *gluon_sig[nCBins][ntrkbins]; TGraph *up_sig[nCBins][ntrkbins]; TGraph *down_sig[nCBins][ntrkbins];
+
+  for(int ibin=0; ibin<1; ibin++){
+    for(int ibin2=0;ibin2<ntrkbins-1;ibin2++){
+      for(int ibin3=0;ibin3<njtptbins;ibin3++){
+        inclusive_mean[ibin3] = f_chg_reco_avg[ibin][ibin3][ibin2+1]->GetParameter(1);
+        quark_mean[ibin3] = f_chg_reco_q_avg[ibin][ibin3][ibin2+1]->GetParameter(1);
+        gluon_mean[ibin3] = f_chg_reco_g_avg[ibin][ibin3][ibin2+1]->GetParameter(1);
+        up_mean[ibin3] = f_chg_reco_up_avg[ibin][ibin3][ibin2+1]->GetParameter(1);
+        down_mean[ibin3] = f_chg_reco_down_avg[ibin][ibin3][ibin2+1]->GetParameter(1);
+
+        inclusive_res[ibin3] = f_chg_reco_avg[ibin][ibin3][ibin2+1]->GetParameter(2);
+        quark_res[ibin3] = f_chg_reco_q_avg[ibin][ibin3][ibin2+1]->GetParameter(2);
+        gluon_res[ibin3] = f_chg_reco_g_avg[ibin][ibin3][ibin2+1]->GetParameter(2);
+        up_res[ibin3] = f_chg_reco_up_avg[ibin][ibin3][ibin2+1]->GetParameter(2);
+        down_res[ibin3] = f_chg_reco_down_avg[ibin][ibin3][ibin2+1]->GetParameter(2);
+      }
+
+    inclusive_avg[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,inclusive_mean);
+    inclusive_avg[ibin][ibin2]->SetName((TString)("inclusive_mean_"+cent[ibin]+"_"+trk[ibin2]));
+    quark_avg[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,quark_mean);
+    quark_avg[ibin][ibin2]->SetName((TString)("quark_mean_"+cent[ibin]+"_"+trk[ibin2]));
+    gluon_avg[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,gluon_mean);
+    gluon_avg[ibin][ibin2]->SetName((TString)("gluon_mean_"+cent[ibin]+"_"+trk[ibin2]));
+    up_avg[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,up_mean);
+    up_avg[ibin][ibin2]->SetName((TString)("up_mean_"+cent[ibin]+"_"+trk[ibin2]));
+    down_avg[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,down_mean);
+    down_avg[ibin][ibin2]->SetName((TString)("down_mean_"+cent[ibin]+"_"+trk[ibin2]));
+
+    inclusive_sig[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,inclusive_res);
+    inclusive_sig[ibin][ibin2]->SetName((TString)("inclusive_res_"+cent[ibin]+"_"+trk[ibin2]));
+    quark_sig[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,quark_res);
+    quark_sig[ibin][ibin2]->SetName((TString)("quark_res_"+cent[ibin]+"_"+trk[ibin2]));
+    gluon_sig[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,gluon_res);
+    gluon_sig[ibin][ibin2]->SetName((TString)("gluon_res_"+cent[ibin]+"_"+trk[ibin2]));
+    up_sig[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,up_res);
+    up_sig[ibin][ibin2]->SetName((TString)("up_res_"+cent[ibin]+"_"+trk[ibin2]));
+    down_sig[ibin][ibin2] = new TGraph(njtptbins-1,jtpt_bound,down_res);
+    down_sig[ibin][ibin2]->SetName((TString)("down_res_"+cent[ibin]+"_"+trk[ibin2]));
+    }
+  }
+
+  TCanvas *c_MC_avg_graph = new TCanvas("c_MC_avg_graph","c_MC_avg_graph",1500,500);
+  c_MC_avg_graph->Divide(3,1,0);
+  
+  for(int ibin=0; ibin<1; ibin++){
+   for(int ibin2=0; ibin2<ntrkbins-1; ibin2++){
+    c_MC_avg_graph->cd(ibin2+1);
+    h_dummy3->Draw("same");
+    inclusive_avg[ibin][ibin2]->SetMarkerColor(kBlack); inclusive_avg[ibin][ibin2]->SetMarkerStyle(2); inclusive_avg[ibin][ibin2]->SetMarkerSize(1.3);
+    inclusive_avg[ibin][ibin2]->Draw("PL");
+    quark_avg[ibin][ibin2]->SetMarkerColor(kBlue); quark_avg[ibin][ibin2]->SetMarkerStyle(2); quark_avg[ibin][ibin2]->SetMarkerSize(1.3);
+    quark_avg[ibin][ibin2]->Draw("PL");
+    gluon_avg[ibin][ibin2]->SetMarkerColor(kRed); gluon_avg[ibin][ibin2]->SetMarkerStyle(2); gluon_avg[ibin][ibin2]->SetMarkerSize(1.3);
+    gluon_avg[ibin][ibin2]->Draw("PL");
+    up_avg[ibin][ibin2]->SetMarkerColor(kBlue); up_avg[ibin][ibin2]->SetMarkerStyle(22); up_avg[ibin][ibin2]->SetMarkerSize(1.3);
+    up_avg[ibin][ibin2]->Draw("PL");
+    down_avg[ibin][ibin2]->SetMarkerColor(kBlue); down_avg[ibin][ibin2]->SetMarkerStyle(23); down_avg[ibin][ibin2]->SetMarkerSize(1.3);
+    down_avg[ibin][ibin2]->Draw("PL");
+      
+      TString tmp = trk_tag[ibin2+1];
+      tx = new TLatex(); tx->SetTextSize(.1);
+      tx->DrawLatexNDC(0.15,0.85, tmp);
+   }
+  }
+
+  TCanvas *c_MC_res_graph = new TCanvas("c_MC_res_graph","c_MC_res_graph",1500,500);
+  c_MC_res_graph->Divide(3,1,0);
+  
+  for(int ibin=0; ibin<1; ibin++){
+   for(int ibin2=0; ibin2<ntrkbins-1; ibin2++){
+    c_MC_res_graph->cd(ibin2+1);
+    h_dummy4->Draw("same");
+    inclusive_sig[ibin][ibin2]->SetMarkerColor(kBlack); inclusive_sig[ibin][ibin2]->SetMarkerStyle(2); inclusive_sig[ibin][ibin2]->SetMarkerSize(1.3);
+    inclusive_sig[ibin][ibin2]->Draw("PL");
+    quark_sig[ibin][ibin2]->SetMarkerColor(kBlue); quark_sig[ibin][ibin2]->SetMarkerStyle(2); quark_sig[ibin][ibin2]->SetMarkerSize(1.3);
+    quark_sig[ibin][ibin2]->Draw("PL");
+    gluon_sig[ibin][ibin2]->SetMarkerColor(kRed); gluon_sig[ibin][ibin2]->SetMarkerStyle(2); gluon_sig[ibin][ibin2]->SetMarkerSize(1.3);
+    gluon_sig[ibin][ibin2]->Draw("PL");
+    up_sig[ibin][ibin2]->SetMarkerColor(kBlue); up_sig[ibin][ibin2]->SetMarkerStyle(22); up_sig[ibin][ibin2]->SetMarkerSize(1.3);
+    up_sig[ibin][ibin2]->Draw("PL");
+    down_sig[ibin][ibin2]->SetMarkerColor(kBlue); down_sig[ibin][ibin2]->SetMarkerStyle(23); down_sig[ibin][ibin2]->SetMarkerSize(1.3);
+    down_sig[ibin][ibin2]->Draw("PL");
+      
+      TString tmp = trk_tag[ibin2+1];
+      tx = new TLatex(); tx->SetTextSize(.1);
+      tx->DrawLatexNDC(0.15,0.85, tmp);
+   }
   }
 
 }
