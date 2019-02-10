@@ -23,11 +23,11 @@
 #include "TDatime.h"
 #include <vector>
 #include "TCanvas.h"
-#include "pp_jetchg_Oct19.h"
-//#include "PbPb_jetchg_Oct19.h"
+//#include "pp_jetchg_Oct19.h"
+#include "PbPb_jetchg_Oct19.h"
 #include "jffcorr/nCScorr.h"
 
-const int nCBins = 1;
+const int nCBins = 4;
 const int nptBins = 55;
 const int ntrkBins = 4;
 const int nkbins = 4;
@@ -134,6 +134,9 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
   TH1D *h_vz[nCBins];
   TH1D *h_vz_nrw[nCBins];
   TH1D *h_pthat[nCBins];
+
+  TH1D *h_ntrk[nCBins];
+  TH1D *h_nbkgtrk[nCBins];
 
   TH1D *h_reco_full[nCBins];
   TH1D *h_reco_full_q[nCBins];
@@ -277,6 +280,14 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
   TH2F *h_jt_gen_g_cloure[nCBins];  
 
   for (int ibin=0;ibin<nCBins;ibin++){
+
+    sprintf(saythis,"h_ntrk_cent%d",ibin);
+    h_ntrk[ibin] = new TH1D(saythis, "", 100,0,100);
+    h_ntrk[ibin]->Sumw2();
+
+    sprintf(saythis,"h_nbkgtrk_cent%d",ibin);
+    h_nbkgtrk[ibin] = new TH1D(saythis, "", 100,0,100);
+    h_nbkgtrk[ibin]->Sumw2();
 
     sprintf(saythis,"h_eta_full_cent%d",ibin);
     h_eta_full[ibin] = new TH1D(saythis, "", netaBins-1,eta_bounds);
@@ -803,8 +814,8 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
   TTree *inp_tree = (TTree*)my_file->Get("unzipMixTree");
 
   //PbPbchg_Sep10 *my_primary = new PbPbchg_Sep10(inp_tree);
-  //PbPb_jetchg_Oct19 *my_primary = new PbPb_jetchg_Oct19(inp_tree);
-  pp_jetchg_Oct19 *my_primary = new pp_jetchg_Oct19(inp_tree);
+  PbPb_jetchg_Oct19 *my_primary = new PbPb_jetchg_Oct19(inp_tree);
+  //pp_jetchg_Oct19 *my_primary = new pp_jetchg_Oct19(inp_tree);
 
   cout << "Successfully retrieved tree from input file!" << endl;
   Long64_t n_jets = my_primary->fChain->GetEntriesFast();
@@ -857,6 +868,7 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
     }
 
     n_trk[0] = my_primary->n_trkpt2; n_trk[1] = my_primary->n_trkpt3; n_trk[2] = my_primary->n_trkpt4; n_trk[3] = my_primary->n_trkpt5;
+    n_bkgtrk[0] = my_primary->n_bkgtrk;
     //if(n_trk[0]==0) continue;
 
     trk_chg_kappa[0] = -999.; trk_chg_kappa[1] = -999.; trk_chg_kappa[2] = -999.; trk_chg_kappa[3] = -999.;
@@ -1012,9 +1024,12 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
     
     if(calo_corrpt>=100.){
 
+      h_ntrk[mycbin]->Fill(n_trk[0],pthat_weight*weight_cen*weight_vz);
+      h_nbkgtrk[mycbin]->Fill(n_bkgtrk[0],pthat_weight*weight_cen*weight_vz);
+
       for(int ibin2=0;ibin2<ntrkBins;ibin2++){
         h_trk_corrpt[mycbin][ibin2]->Fill(calo_corrpt,n_trk[ibin2],pthat_weight*weight_cen*weight_vz);
-        h_bkgtrk_corrpt[mycbin][ibin2]->Fill(calo_corrpt,n_bkgtrk[ibin2],pthat_weight*weight_cen*weight_vz);
+        h_bkgtrk_corrpt[mycbin][ibin2]->Fill(calo_corrpt,n_bkgtrk[ibin2],pthat_weight*weight_cen*weight_vz); 
 
         h_chg_corrpt[mycbin][ibin2]->Fill(calo_corrpt,trk_chg_ptcut[ibin2],pthat_weight*weight_cen*weight_vz);        
         h_chg_corrpt_bkg[mycbin][ibin2]->Fill(calo_corrpt,trk_bkg_ptcut[ibin2],pthat_weight*weight_cen*weight_vz);
@@ -1262,6 +1277,9 @@ void jetchg_kappa(bool ispp=1, bool isdata=1){
 
     h_chg_corrpt_highest[ibin]->Write();
     h_chg_corrpt_highest_2[ibin]->Write();
+
+    h_ntrk[ibin]->Write();
+    h_nbkgtrk[ibin]->Write();
 
     if(!isdata){ 
       h_gen_full[ibin]->Write();
